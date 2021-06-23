@@ -20,7 +20,7 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
                 })
             }
             else {
-                checkObj = Promise.reject('illegal arguments!');
+                throw { error: 'illegal arguments!' }
             }
         } catch (err) {
             throw err;
@@ -32,16 +32,19 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
         let updateObj = null;
         try {
             if (document && document.itemId && document.quantity) {
-
+                let updateFilter = { itemId: document.itemId }
+                let updateBody = { quantity: document.quantity }
+                updateObj = db['Inventory'].update(updateBody, { where: updateFilter })
             }
             else {
-                updateObj = Promise.reject('illegal arguments!')
+                throw { error: 'illegal arguments!' }
             }
         } catch (err) {
             throw err;
         }
+        return updateObj;
     }
 
 
-    return { checkInventory }
+    return { checkInventory, updateInventory }
 }

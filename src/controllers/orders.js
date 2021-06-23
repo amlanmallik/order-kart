@@ -4,7 +4,7 @@ const path = require('path');
 const router = express.Router();
 
 module.exports = () => {
-    const { logger: { errorLogObj }, inventoryRepo: { checkInventory }, orderRepo: { createOrder } } = container.cradle;
+    const { inventoryRepo: { checkInventory, updateInventory }, orderRepo: { createOrder } } = container.cradle;
     router.post('/create', async (req, res, next) => {
         try {
             const document = req.body;
@@ -13,19 +13,23 @@ module.exports = () => {
                 let inventoryLookup = await checkInventory(checkInventoryObj);
                 inventoryLookup = inventoryLookup ? inventoryLookup.dataValues : null;
                 if (inventoryLookup && inventoryLookup.quantity >= document.quantity) {
+                    let newQty = inventoryLookup.quantity - document.quantity;
+                    let updateBody = { itemId: document.itemId, quantity: newQty }
+                    let updateInventoryPromObj = updateInventory(updateBody);
                     let createObj = { userId: document.userId, itemId: document.itemId, quantity: document.quantity }
-                    let orderCreation = await createOrder(createObj);
-                    res.json({ data: orderCreation });
+                    let orderCreationPromObj = createOrder(createObj);
+                    let orderCreation = await Promise.all([updateInventoryPromObj, orderCreationPromObj]);
+                    res.json({ data: orderCreation[1] });
                 }
                 else {
-                    res.status(403).json({ error: 'impossible to create order!' })
+                    throw { error: 'impossible to create order!' }
                 }
             }
             else {
-                res.status(403).json({ error: 'illegal!' })
+                throw { error: 'illegal arguments!' }
             }
         } catch (err) {
-            res.status(500).json(errorLogObj(path.resolve(__dirname, __filename), err));
+            res.status(500).json(err);
         }
         res.end();
     })

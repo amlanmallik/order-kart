@@ -1,4 +1,5 @@
-const attr = { exclude: ['createdAt', 'updatedAt', 'status'] }
+const excludeAttr = { exclude: ['createdAt', 'updatedAt', 'status'] }
+const includeAttr = ['quantity', 'orderId'];
 module.exports = ({ db, logger: { errorLogObj } }) => {
 
     const checkOrders = (document) => {
@@ -11,11 +12,11 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
             }
             checkObj = db['Orders'].findAll({
                 where: filterObj,
-                attributes: attr
+                attributes: includeAttr
             })
         }
         else {
-            checkObj = Promise.reject('illegal arguments!');
+            throw { error: 'illegal arguments!' }
         }
         return checkObj;
     }
@@ -33,10 +34,10 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
                 updateObj = db['Orders'].create(updateParams);
             }
             else {
-                updateObj = Promise.reject('illegal arguments!');
+                throw { error: 'illegal arguments!' }
             }
         } catch (err) {
-            updateObj = Promise.reject('illegal arguments!');
+            throw err;
         }
         return updateObj;
     }
