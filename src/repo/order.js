@@ -27,6 +27,7 @@ module.exports = ({ inventoryRepo: { updateInventory }, db, logger: { errorLogOb
 
     const insertOrder = async (document, t) => {
         let updateObj = null;
+        let tempProm = null;
         try {
             if (document && document.userId && document.itemId) {
                 const { userId, itemId } = document;
@@ -35,8 +36,8 @@ module.exports = ({ inventoryRepo: { updateInventory }, db, logger: { errorLogOb
                     InventoryItemId: itemId,
                     quantity: document.quantity
                 };
-                updateParams = t ? { ...updateParams, transaction: t } : { ...updateParams };
-                updateObj = await db['Orders'].create(updateParams, t);
+                tempProm = t ? db['Orders'].create(updateParams, { transaction: t }) : db['Orders'].create(updateParams);
+                updateObj = await tempProm;
             }
             else {
                 throw { error: 'illegal arguments!' }
@@ -52,8 +53,8 @@ module.exports = ({ inventoryRepo: { updateInventory }, db, logger: { errorLogOb
         let updateObj = null;
         try {
             let t = await db.sequelize.transaction();
-            updateInventory(document, t);
-            updateObj = insertOrder(document, t);
+            let temp = await updateInventory(document, t);
+            updateObj = await insertOrder(document, t);
             await t.commit();
             return updateObj;
         } catch (err) {

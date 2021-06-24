@@ -20,7 +20,7 @@ module.exports = () => {
                     res.json(response);
                 }
                 else {
-                    throw { error: 'impossible to create order!' }
+                    throw { error: 'item invalid or exceeds the maximum available quantity!' }
                 }
             }
             else {

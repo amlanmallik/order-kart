@@ -5,7 +5,5 @@ module.exports = {
     dbUser: 'root',
     dbPassword: 'root',
     dbHost: 'localhost',
-    dbType: 'mysql',
-    secretKey: 'a23edvgy7ujm',
-    expiryTime: '1h'
+    dbType: 'mysql'
 }
