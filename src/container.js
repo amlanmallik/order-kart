@@ -5,8 +5,8 @@ const config = require('./configuration/server-config');
 const db = require('./models/index');
 const orderRepo = require('./repo/order');
 const inventoryRepo = require('./repo/inventory');
-const authMiddleware = require('./middlewares/auth');
 const logger = require('./utilities/logger');
+const wrapResponse = require('./utilities/responseWrapper');
 
 const { createContainer, asValue, asFunction } = awilix;
 const container = createContainer();
@@ -16,8 +16,8 @@ container.register({
     router: asFunction(router).singleton(),
     db: asFunction(db).singleton(),
     config: asValue(config),
-    authMiddleware: asFunction(authMiddleware).singleton(),
     logger: asFunction(logger).singleton(),
+    wrapResponse: asFunction(wrapResponse).singleton(),
     orderRepo: asFunction(orderRepo).singleton(),
     inventoryRepo: asFunction(inventoryRepo).singleton()
 })

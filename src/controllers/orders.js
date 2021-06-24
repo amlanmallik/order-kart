@@ -1,10 +1,10 @@
 const container = require('../container');
 const express = require('express');
-const path = require('path');
 const router = express.Router();
 
 module.exports = () => {
-    const { inventoryRepo: { checkInventory, updateInventory }, orderRepo: { createOrder } } = container.cradle;
+    const { inventoryRepo: { checkInventory }, orderRepo: { createOrder }, logger: { errorLogObj }, wrapResponse: { wrapResponse } } = container.cradle;
+
     router.post('/create', async (req, res, next) => {
         try {
             const document = req.body;
@@ -14,12 +14,10 @@ module.exports = () => {
                 inventoryLookup = inventoryLookup ? inventoryLookup.dataValues : null;
                 if (inventoryLookup && inventoryLookup.quantity >= document.quantity) {
                     let newQty = inventoryLookup.quantity - document.quantity;
-                    let updateBody = { itemId: document.itemId, quantity: newQty }
-                    let updateInventoryPromObj = updateInventory(updateBody);
-                    let createObj = { userId: document.userId, itemId: document.itemId, quantity: document.quantity }
-                    let orderCreationPromObj = createOrder(createObj);
-                    let orderCreation = await Promise.all([updateInventoryPromObj, orderCreationPromObj]);
-                    res.json({ data: orderCreation[1] });
+                    let createObj = { userId: document.userId, itemId: document.itemId, quantity: document.quantity, updatedQuantity: newQty };
+                    let orderCreationPromObj = await createOrder(createObj);
+                    let response = wrapResponse(orderCreationPromObj, null);
+                    res.json(response);
                 }
                 else {
                     throw { error: 'impossible to create order!' }
@@ -29,7 +27,9 @@ module.exports = () => {
                 throw { error: 'illegal arguments!' }
             }
         } catch (err) {
-            res.status(500).json(err);
+            let errorObj = errorLogObj('controller -> orders', err);
+            let response = wrapResponse(null, errorObj);
+            res.status(500).json(response);
         }
         res.end();
     })

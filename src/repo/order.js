@@ -1,27 +1,31 @@
-const excludeAttr = { exclude: ['createdAt', 'updatedAt', 'status'] }
 const includeAttr = ['quantity', 'orderId'];
-module.exports = ({ db, logger: { errorLogObj } }) => {
+module.exports = ({ inventoryRepo: { updateInventory }, db, logger: { errorLogObj } }) => {
 
-    const checkOrders = (document) => {
+    const checkOrders = async (document) => {
         let checkObj = null;
-        if (document && document.userId) {
-            const { userId } = document;
-            const filterObj = {
-                userId: userId,
-                status: true
+        try {
+            if (document && document.userId) {
+                const { userId } = document;
+                const filterObj = {
+                    userId: userId,
+                    status: true
+                }
+                checkObj = await db['Orders'].findAll({
+                    where: filterObj,
+                    attributes: includeAttr
+                })
             }
-            checkObj = db['Orders'].findAll({
-                where: filterObj,
-                attributes: includeAttr
-            })
+            else {
+                throw { error: 'illegal arguments!' }
+            }
+            return checkObj;
+        } catch (err) {
+            let errorObj = errorLogObj('repo -> order', err);
+            throw errorObj;
         }
-        else {
-            throw { error: 'illegal arguments!' }
-        }
-        return checkObj;
     }
 
-    const createOrder = (document) => {
+    const insertOrder = async (document, t) => {
         let updateObj = null;
         try {
             if (document && document.userId && document.itemId) {
@@ -31,20 +35,33 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
                     InventoryItemId: itemId,
                     quantity: document.quantity
                 };
-                updateObj = db['Orders'].create(updateParams);
+                updateParams = t ? { ...updateParams, transaction: t } : { ...updateParams };
+                updateObj = await db['Orders'].create(updateParams, t);
             }
             else {
                 throw { error: 'illegal arguments!' }
             }
+            return updateObj;
         } catch (err) {
-            throw err;
+            let errorObj = errorLogObj('repo -> order', err);
+            throw errorObj;
         }
-        return updateObj;
     }
 
-    // const updateInventory = () => {
+    const createOrder = async (document) => {
+        let updateObj = null;
+        try {
+            let t = await db.sequelize.transaction();
+            updateInventory(document, t);
+            updateObj = insertOrder(document, t);
+            await t.commit();
+            return updateObj;
+        } catch (err) {
+            if (t) await t.rollback();
+            let errorObj = errorLogObj('repo -> order', err);
+            throw errorObj;
+        }
+    }
 
-    // }
-
-    return { checkOrders, createOrder }
+    return { checkOrders, insertOrder, createOrder }
 }

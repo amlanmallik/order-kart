@@ -1,7 +1,7 @@
 const attr = { exclude: ['createdAt', 'updatedAt', 'status'] }
 module.exports = ({ db, logger: { errorLogObj } }) => {
     const { Op } = db.Sequelize;
-    const checkInventory = (document) => {
+    const checkInventory = async (document) => {
         let checkObj = null;
         try {
             if (document) {
@@ -14,7 +14,7 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
                 if (document.itemId) {
                     filterObj['itemId'] = document.itemId;
                 }
-                checkObj = db['Inventory'].findOne({
+                checkObj = await db['Inventory'].findOne({
                     where: filterObj,
                     attributes: attr
                 })
@@ -23,18 +23,19 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
                 throw { error: 'illegal arguments!' }
             }
         } catch (err) {
-            throw err;
+            throw errorLogObj('repo -> inventory', err);
         }
         return checkObj;
     }
 
-    const updateInventory = (document) => {
+    const updateInventory = async (document, t) => {
         let updateObj = null;
         try {
             if (document && document.itemId && document.quantity) {
                 let updateFilter = { itemId: document.itemId }
-                let updateBody = { quantity: document.quantity }
-                updateObj = db['Inventory'].update(updateBody, { where: updateFilter })
+                let updateBody = { quantity: document.updatedQuantity }
+                let searchObj = t ? { where: updateFilter, transaction: t } : { where: updateFilter }
+                updateObj = await db['Inventory'].update(updateBody, searchObj)
             }
             else {
                 throw { error: 'illegal arguments!' }
@@ -44,7 +45,6 @@ module.exports = ({ db, logger: { errorLogObj } }) => {
         }
         return updateObj;
     }
-
 
     return { checkInventory, updateInventory }
 }
