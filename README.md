@@ -1,7 +1,7 @@
 # Order Kart
 ## Introduction
 ---
-- An API to create order
+- An API to create order.
 - Every user can order the same item multiple times as
 long as the inventory
 exists.
@@ -31,7 +31,7 @@ POST http://localhost:3200/api/order/create
 **body :**
 ```json
 {
-	"userId":21,
+	"userId":1,
 	"itemId":2,
 	"quantity":20
 }
