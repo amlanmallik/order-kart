@@ -24,6 +24,11 @@ exists.
 ## Sample
 ---
 ### Request
+**url :**
+```sh
+POST http://localhost:3200/api/order/create
+```
+**body :**
 ```json
 {
 	"userId":21,
@@ -31,7 +36,14 @@ exists.
 	"quantity":20
 }
 ```
+<br/>
+
 ### Response
+**status :**
+```sh
+200 OK
+```
+**body :**
 ```json
 {
     "data": {
