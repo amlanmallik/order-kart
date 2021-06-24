@@ -51,14 +51,16 @@ module.exports = ({ inventoryRepo: { updateInventory }, db, logger: { errorLogOb
 
     const createOrder = async (document) => {
         let updateObj = null;
+        let t = await db.sequelize.transaction();
         try {
-            let t = await db.sequelize.transaction();
             updateObj = await Promise.all([insertOrder(document, t), updateInventory(document, t)]);
             await t.commit();
             return updateObj[0];
         } catch (err) {
-            if (t) await t.rollback();
             let errorObj = errorLogObj('repo -> order', err);
+            if (t) {
+                await t.rollback()
+            };
             throw errorObj;
         }
     }
