@@ -5,6 +5,7 @@
 - Every user can order the same item multiple times as
 long as the inventory
 exists.
+_(Please [click here](./Reference_resources/backend-assignment-node-js.pdf) to refer the requirement document.)_
 
 ## Libraries
 ---
