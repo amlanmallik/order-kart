@@ -20,7 +20,8 @@ exists.
 ## Database
 ---
 - Mysql 14.14.
-- [Database structure](./Reference_resources/Order_Kart.png)
+- Database structure
+    ![db design](./Reference_resources/Order_Kart.png)
 ## Sample
 ---
 ### Request
