@@ -20,7 +20,7 @@ exists.
 ## Database
 ---
 - Mysql 14.14.
-### Database design
+- Database design
 ![db design](./Reference_resources/Order_Kart.png)
 ## Sample
 ---
